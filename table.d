@@ -31,7 +31,7 @@ private:
 						mapMembers ~= "\nT[typeof(T." ~ m ~ ")] map_" ~ m ~ ";";
 						setterCheckCode ~= "if(t." ~ m ~ " in " ~ mapOf!m ~ ") uniqueKeyFail(\"" ~ m ~ "\", t); ";
 						setterCommitCode ~= mapOf!m ~ "[t." ~ m ~ "] = t; ";
-				        hasCode    ~= "static if(key == \"" ~ m ~ "\") return cast(bool)(t in " ~ mapOf!m ~ "); ";
+						hasCode    ~= "static if(key == \"" ~ m ~ "\") return cast(bool)(t in " ~ mapOf!m ~ "); ";
 					}
 				}
 			}
@@ -83,7 +83,7 @@ unittest
 
 	try
 	{
-		t.set(Test("Blarg", 1231));
+		t.set(Test("Blarg", 123133));
 		assert(0, "No duplicate names allowed!");
 	}
 	catch{}
