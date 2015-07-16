@@ -1,6 +1,8 @@
-import std.typecons : Flag;
-alias PK = Flag!"isPrimaryKey";
-alias PrimaryKey = PK.yes;
+enum
+{
+	PrimaryKey,
+	IndexedForeignKey,
+}
 
 struct Table(T)
 {
@@ -24,22 +26,49 @@ private:
 			string mapMembers, setterCheckCode, setterCommitCode, hasCode;
 			foreach(m; __traits(allMembers, T))
 			{
-				foreach(a; __traits(getAttributes, __traits(getMember, T, m)))
+				auto traits = __traits(getAttributes, __traits(getMember, T, m));
+				//template validateTraits(PK isPrimary, IFK isForeign, Traits...)
+				//{
+				//	static if(Traits.length)
+				//	{
+				//		static if(is(typeof(Traits[0] == PK)) && Traits[0] == PK.yes)
+				//			enum newIsPrimary = PK.yes;
+				//		else
+				//			enum newIsPrimary = isPrimary;
+				//		static if(is(typeof(Traits[0] == IFK)) && Traits[0] == IFK.yes)
+				//			enum newIsForeign = IFK.yes;
+				//		else
+				//			enum newIsForeign = isForeign;
+				//		static assert((newIsPrimary ^ newIsForeign) || (!newIsPrimary && !newIsForeign), "key \"" ~ m ~ "\" cannot be primary and secondary");
+				//		enum validateTraits = validateTraits!(newIsPrimary, newIsForeign, Traits[1..$]);
+				//	}
+				//	else
+				//		enum validateTraits = true;
+				//}
+				//static assert(validateTraits!(PK.no, IFK.no, traits));
+				foreach(a; traits)
 				{
 					if(a == PrimaryKey)
 					{
 						mapMembers ~= "\nT[typeof(T." ~ m ~ ")] map_" ~ m ~ ";";
-						setterCheckCode ~= "if(t." ~ m ~ " in " ~ mapOf!m ~ ") uniqueKeyFail(\"" ~ m ~ "\", t); ";
-						setterCommitCode ~= mapOf!m ~ "[t." ~ m ~ "] = t; ";
-						hasCode    ~= "static if(key == \"" ~ m ~ "\") return cast(bool)(t in " ~ mapOf!m ~ "); ";
+						setterCheckCode ~= "\nif(t." ~ m ~ " in " ~ mapOf!m ~ ") uniqueKeyFail(\"" ~ m ~ "\", t); ";
+						setterCommitCode ~= '\n' ~ mapOf!m ~ "[t." ~ m ~ "] = t; ";
+						hasCode ~= "\nstatic if(key == \"" ~ m ~ "\") return cast(bool)(t in " ~ mapOf!m ~ "); ";
+					}
+					if(a == IndexedForeignKey)
+					{
+						mapMembers ~= "\nT[][typeof(T." ~ m ~ ")] map_" ~ m ~ ";";
+						setterCommitCode ~= '\n' ~ mapOf!m ~ "[t." ~ m ~ "] ~= t; ";
 					}
 				}
+
+				
 			}
 			code ~= "private:\n" ~ mapMembers;
-			code ~= "public: ";
+			code ~= "\npublic: ";
 			code ~= "\nvoid set(T t) { import std.conv : to; "
 					~ "auto uniqueKeyFail(string field, T t) { throw new Exception(\"Unique key constraint for field \\\"\" ~ field ~ \"\\\" failed: \" ~ t.to!string); } "
-					~ setterCheckCode ~ setterCommitCode ~ "_length += 1; }";
+					~ setterCheckCode ~ setterCommitCode ~ "\n_length += 1; }";
 			code ~= "\nbool has(string key, T)(T t) { " ~ indexAssert ~ " " ~ hasCode ~ "}";
 		}
 		return code;
@@ -49,7 +78,7 @@ public:
 	size_t length() @property { return _length; }
 	size_t empty() @property { return _length == 0; }
 
-	T get(string key, U)(U u)
+	auto get(string key, U)(U u)
 	{
 		mixin(indexAssert);
 		import std.conv : to;
@@ -57,7 +86,7 @@ public:
 				~ "return " ~ mapOf!key ~ "[u];");
 	}
 
-	T get(string key, U)(U u, T defaultValue)
+	auto get(string key, U)(U u, T defaultValue)
 	{
 		mixin(indexAssert);
 		import core.exception : RangeError;
