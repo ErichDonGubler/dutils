@@ -10,6 +10,7 @@ struct Table(T)
 
 private:
 	size_t _length;
+	T[] records;
 
 	// The compile-time part of this struct
 	enum tableCode = generateTable();
@@ -68,7 +69,7 @@ private:
 			code ~= "\npublic: ";
 			code ~= "\nvoid set(T t) { import std.conv : to; "
 					~ "auto uniqueKeyFail(string field, T t) { throw new Exception(\"Unique key constraint for field \\\"\" ~ field ~ \"\\\" failed: \" ~ t.to!string); } "
-					~ setterCheckCode ~ setterCommitCode ~ "\n_length += 1; }";
+					~ setterCheckCode ~ setterCommitCode ~ "\nrecords ~= t;\n_length += 1; }";
 			code ~= "\nbool has(string key, T)(T t) { " ~ indexAssert ~ " " ~ hasCode ~ "}";
 		}
 		return code;
@@ -86,13 +87,28 @@ public:
 				~ "return " ~ mapOf!key ~ "[u];");
 	}
 
-	auto get(string key, U)(U u, T defaultValue)
+	auto get(string key, U)(U u, lazy T defaultValue)
 	{
 		mixin(indexAssert);
-		import core.exception : RangeError;
-		import std.exception : ifThrown;
-		mixin("return (" ~ mapOf!key ~ "[u]).ifThrown!RangeError(defaultValue);");
+		mixin("return (" ~ mapOf!key ~ ".get(u, defaultValue);");
 	}
+
+	auto by(string field)()
+	{
+		mixin("return " ~ mapOf!field ~ ".byKey();");
+	}
+
+	int opApply(int delegate(ref T) dg)
+    {
+        int result = 0;
+        foreach(r; records)
+        {
+            result = dg(r);
+            if (result)
+                break;
+        }
+        return result;
+    }
 }
 
 unittest
