@@ -115,6 +115,14 @@ public:
 			write(t);
 		endRow();
 	}
+
+	static if(is(Range : File))
+	{
+		auto flush()
+		{
+			return outputFile.flush;
+		}
+	}
 }
 
 auto csvWriter(Range, Separator = char, T...)(T t)
