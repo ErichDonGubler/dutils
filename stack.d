@@ -48,3 +48,13 @@ public:
 		return s ~ "]";
 	}
 }
+
+unittest
+{
+	Stack!string yum;
+	yum.push("world!");
+	yum.push("Hello, ");
+	while(!yum.empty)
+		write(yum.pop);
+	writeln;
+}
