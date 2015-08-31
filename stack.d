@@ -1,3 +1,5 @@
+module dutils.stack;
+
 import std.exception : enforce;
 
 public struct Stack(T)// Unfortunately, D can't return tuples yet...

@@ -1,3 +1,5 @@
+module dutils.hashset;
+
 struct HashSet(T)
 {
 private:

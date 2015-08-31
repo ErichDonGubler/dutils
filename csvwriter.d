@@ -1,3 +1,5 @@
+module dutils.csvwriter;
+
 import std.conv : to;
 import std.stdio : File;
 import std.range.primitives : ElementType, isOutputRange;
