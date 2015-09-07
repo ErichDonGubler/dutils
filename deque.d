@@ -4,8 +4,6 @@ import std.conv : to;
 
 struct Deque(T)
 {
-	// FIXME: Make pops throw when deque is totally empty!
-
 	this(T[] ts)
 	{
 		this[] = ts;
@@ -17,8 +15,8 @@ struct Deque(T)
 	void reshuffle()
 	{
 		import std.math : abs;
-		//TODO: Re-center deque
-		long diff = frontLength - backLength;
+		import std.conv : signed;
+		auto diff = signed(frontLength - backLength);
 		if(abs(diff) > 1)
 		{
 			// The imbalanced arrays can be called the "big" array
