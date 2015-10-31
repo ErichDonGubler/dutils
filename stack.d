@@ -8,9 +8,23 @@ private:
 	T[] ts;
 
 public:
+	this(T[] ts)
+	{
+		import std.range : retro, array;
+		this.ts = ts.retro.array;
+	}
+
 	void push(T t)
 	{
 		ts ~= t;
+	}
+
+	import std.range.primitives : isInputRange;
+	import std.traits : Unqual;
+	void pushAll(R)(R range)
+		if(isInputRange!(Unqual!R))
+	{
+		ts ~= range;
 	}
 
 	ref T peek(size_t depth = 0)
@@ -39,13 +53,19 @@ public:
 
 	bool empty() @property const { return ts.length == 0; }
 
-	string toString(string delegate(T) f)
+	string toString(string delegate(T) f)// REMOVE?
 	{
 		string s = "[";
 		s ~= f(pop);
 		while(!empty)
 			s ~= ", " ~ f(pop);
 		return s ~ "]";
+	}
+
+	string toString()
+	{
+		import std.conv : to;
+		return "s" ~ ts.to!string;
 	}
 }
 
