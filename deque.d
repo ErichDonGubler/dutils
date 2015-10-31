@@ -98,21 +98,24 @@ struct Deque(T)
 		--backLength;
 	}
 
-	T front()
+	// TODO: non-const accessors
+
+	ref T front()
 	{
 		if(length == 0)
 			throwEmptyException;
-		return (frontLength > 0) ? frontArray[$ - 1] : backArray[0];
+		return (frontLength > 0) ? frontArray[frontLength - 1] : backArray[0];
 	}
 
-	T back()
+	ref T back()
 	{
 		if(length == 0)
 			throwEmptyException;
-		return (backLength > 0) ? backArray[$ - 1] : frontArray[0];
+		return (backLength > 0) ? backArray[backLength - 1] : frontArray[0];
 	}
 
 	size_t length() const @property { return frontLength + backLength; }
+	bool empty() const @property { return length == 0; }
 
 	// int opIndexAssign(int v);  // overloads a[] = v
 	// int opIndexAssign(int v, size_t[2] x);  // overloads a[i .. j] = v
