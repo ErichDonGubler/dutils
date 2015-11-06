@@ -16,7 +16,7 @@ private:
 		else
 		{
 			debug pragma(msg, "Using identity");
-			auto identity(T t) const { return t; }
+			auto identity(const T t) const { return t; }
 			alias ourEvalFun = identity;
 		}
 	}
@@ -30,14 +30,14 @@ private:
 	alias E = ReturnType!ourEvalFun;
 	bool[E] setData;
 
-	bool hasEvaluated(E e) const
+	bool hasEvaluated(const E e) const
 	{
-		return (e in setData) !is null;//XXX: Huh?
+		return (cast(T)e in setData) !is null;//XXX: Huh?
 	}
 
 public:
 
-	bool has(T t) const
+	bool has(const T t) const
 	{
 		return hasEvaluated(ourEvalFun(t));
 	}
@@ -66,5 +66,10 @@ public:
 	{
 		import std.conv : to;
 		return setData.to!string;
+	}
+
+	auto values() const
+	{
+		return setData.keys;
 	}
 }
