@@ -1,6 +1,6 @@
 module dutils.logging;
 
-class SimpleLogger
+class IndentedLogger(string indentString)
 { //TODO: Use @aliasThis template to make this a debug-only class. :)
 private:
 	import std.stdio;
@@ -14,7 +14,7 @@ protected:
 	{
 		if(!wroteIndentation)
 			for(auto i = 0; i < _indentation; i++)
-				write("  ");
+				write(indentString);
 		wroteIndentation = true;
 	}
 
@@ -48,3 +48,10 @@ public:
 		alias logger this;
 	}
 }
+
+auto indentedLogger(string indentString = "  ")(bool enabled = true)
+{
+	return new IndentedLogger!indentString(enabled);
+}
+
+alias SimpleLogger = IndentedLogger!"  ";
