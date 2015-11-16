@@ -1,12 +1,14 @@
 module dutils.logging;
 
+import std.stdio;
+
 class IndentedLogger(string indentString)
 { //TODO: Use @aliasThis template to make this a debug-only class. :)
 private:
-	import std.stdio;
 	bool enabled;
 	bool wroteIndentation = false;
 	int _indentation = 0;
+	File file;
 
 protected:
 
@@ -14,12 +16,16 @@ protected:
 	{
 		if(!wroteIndentation)
 			for(auto i = 0; i < _indentation; i++)
-				write(indentString);
+				file.write(indentString);
 		wroteIndentation = true;
 	}
 
 public:
-	this(bool enabled = true) { this.enabled = enabled; }
+	this(File file = stdout, bool enabled = true)
+	{
+		this.file = file;
+		this.enabled = enabled;
+	}
 	auto ref indentation() @property { return _indentation; }
 	const auto ref logging() @property { return enabled; }
 
@@ -28,7 +34,7 @@ public:
 		if(enabled)
 		{
 			checkIndentation;
-			writeln(t);
+			file.writeln(t);
 			wroteIndentation = false;
 		}
 	}
@@ -38,7 +44,7 @@ public:
 		if(enabled)
 		{
 			checkIndentation;
-			write(t);
+			file.write(t);
 		}
 	}
 
